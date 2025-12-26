@@ -1,29 +1,31 @@
 from PyQt6 import QtGui, QtCore, QtWidgets
 from PyQt6.QtCore import Qt
-
 from time import strftime
 
 class DateTime(QtWidgets.QDialog):
-    def __init__(self,parent = None):
-        QtWidgets.QDialog.__init__(self, parent)
+    def __init__(self, parent=None):
+        # MELHORIA: Uso moderno de super() em vez de chamar a classe pai explicitamente
+        super().__init__(parent)
 
         self.parent = parent
 
-        self.formats = ["%A, %d. %B %Y %H:%M",
-                        "%A, %d. %B %Y",
-                        "%d. %B %Y %H:%M",
-                        "%d.%m.%Y %H:%M",
-                        "%d. %B %Y",
-                        "%d %m %Y",
-                        "%d.%m.%Y",
-                        "%x",
-                        "%X",
-                        "%H:%M"]
+        self.formats = [
+            "%A, %d. %B %Y %H:%M",
+            "%A, %d. %B %Y",
+            "%d. %B %Y %H:%M",
+            "%d.%m.%Y %H:%M",
+            "%d. %B %Y",
+            "%d %m %Y",
+            "%d.%m.%Y",
+            "%x",
+            "%X",
+            "%H:%M"
+        ]
          
         self.initUI()
 
     def initUI(self):
-
+        # Os widgets já estavam corretos (QtWidgets)
         self.box = QtWidgets.QComboBox(self)
 
         for i in self.formats:
@@ -45,16 +47,11 @@ class DateTime(QtWidgets.QDialog):
         self.setWindowTitle("Date and Time")
         self.setLayout(layout)
 
-
     def insert(self):
-
-        # Grab cursor
         cursor = self.parent.text.textCursor()
 
         datetime = strftime(self.formats[self.box.currentIndex()])
 
-        # Insert the comboBox's current text
         cursor.insertText(datetime)
 
-        # Close the window
         self.close()

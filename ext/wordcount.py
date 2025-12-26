@@ -1,83 +1,85 @@
-from PyQt6 import QtGui, QtCore,QtWidgets
+from PyQt6 import QtWidgets, QtGui, QtCore
 from PyQt6.QtCore import Qt
 
 class WordCount(QtWidgets.QDialog):
-    def __init__(self,parent = None):
-        QtWidgets.QDialog.__init__(self, parent)
+    def __init__(self, parent=None):
+        # Uso moderno do super() para herança
+        super().__init__(parent)
 
         self.parent = parent
-         
         self.initUI()
  
     def initUI(self):
-
+        # CORREÇÃO PRINCIPAL: QtGui.QLabel -> QtWidgets.QLabel
+        
         # Word count in selection
-        currentLabel = QtGui.QLabel("Current selection",self)
+        currentLabel = QtWidgets.QLabel("Current selection", self)
         currentLabel.setStyleSheet("font-weight:bold; font-size: 15px;")
 
-        currentWordsLabel = QtGui.QLabel("Words: ", self)
-        currentSymbolsLabel = QtGui.QLabel("Symbols: ",self)
+        currentWordsLabel = QtWidgets.QLabel("Words: ", self)
+        currentSymbolsLabel = QtWidgets.QLabel("Symbols: ", self)
         
-        self.currentWords = QtGui.QLabel(self)
-        self.currentSymbols = QtGui.QLabel(self)
+        self.currentWords = QtWidgets.QLabel(self)
+        self.currentSymbols = QtWidgets.QLabel(self)
 
         # Total word/symbol count
-        totalLabel = QtGui.QLabel("Total",self)
+        totalLabel = QtWidgets.QLabel("Total", self)
         totalLabel.setStyleSheet("font-weight:bold; font-size: 15px;")
 
-        totalWordsLabel = QtGui.QLabel("Words: ", self)
-        totalSymbolsLabel = QtGui.QLabel("Symbols: ",self)
+        totalWordsLabel = QtWidgets.QLabel("Words: ", self)
+        totalSymbolsLabel = QtWidgets.QLabel("Symbols: ", self)
 
-        self.totalWords = QtGui.QLabel(self)
-        self.totalSymbols = QtGui.QLabel(self)
+        self.totalWords = QtWidgets.QLabel(self)
+        self.totalSymbols = QtWidgets.QLabel(self)
 
         # Layout
+        # CORREÇÃO: QtGui.QGridLayout -> QtWidgets.QGridLayout
+        layout = QtWidgets.QGridLayout(self)
+
+        layout.addWidget(currentLabel, 0, 0)
         
-        layout = QtGui.QGridLayout(self)
+        layout.addWidget(currentWordsLabel, 1, 0)
+        layout.addWidget(self.currentWords, 1, 1)
 
-        layout.addWidget(currentLabel,0,0)
-        
-        layout.addWidget(currentWordsLabel,1,0)
-        layout.addWidget(self.currentWords,1,1)
+        layout.addWidget(currentSymbolsLabel, 2, 0)
+        layout.addWidget(self.currentSymbols, 2, 1)
 
-        layout.addWidget(currentSymbolsLabel,2,0)
-        layout.addWidget(self.currentSymbols,2,1)
+        # CORREÇÃO: QtGui.QWidget -> QtWidgets.QWidget
+        spacer = QtWidgets.QWidget()
+        spacer.setFixedSize(0, 5)
 
-        spacer = QtGui.QWidget()
-        spacer.setFixedSize(0,5)
+        layout.addWidget(spacer, 3, 0)
 
-        layout.addWidget(spacer,3,0)
+        layout.addWidget(totalLabel, 4, 0)
 
-        layout.addWidget(totalLabel,4,0)
+        layout.addWidget(totalWordsLabel, 5, 0)
+        layout.addWidget(self.totalWords, 5, 1)
 
-        layout.addWidget(totalWordsLabel,5,0)
-        layout.addWidget(self.totalWords,5,1)
-
-        layout.addWidget(totalSymbolsLabel,6,0)
-        layout.addWidget(self.totalSymbols,6,1)
+        layout.addWidget(totalSymbolsLabel, 6, 0)
+        layout.addWidget(self.totalSymbols, 6, 1)
 
         self.setWindowTitle("Word count")
-        self.setGeometry(300,300,200,200)
+        self.setGeometry(300, 300, 200, 200)
         self.setLayout(layout)
 
     def getText(self):
+        # O método getText permanece praticamente igual, pois manipula strings
+        # e objetos do QTextEdit (que já deve estar correto no parent)
 
-        # Get the text currently in selection
+        # Pega o texto da seleção atual
+        # Nota: textCursor() retorna uma cópia, então é seguro chamar selectedText()
         text = self.parent.text.textCursor().selectedText()
 
-        # Split the text to get the word count
+        # Split remove espaços em branco e conta os itens da lista
         words = str(len(text.split()))
 
-        # And just get the length of the text for the symbols
-        # count
+        # Conta caracteres (incluindo espaços)
         symbols = str(len(text))
 
         self.currentWords.setText(words)
         self.currentSymbols.setText(symbols)
 
-        # For the total count, same thing as above but for the
-        # total text
-        
+        # Pega o texto total do editor
         text = self.parent.text.toPlainText()
 
         words = str(len(text.split()))

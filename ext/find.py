@@ -1,12 +1,10 @@
 from PyQt6 import QtGui, QtCore, QtWidgets
 from PyQt6.QtCore import Qt
-
 import re
 
 class Find(QtWidgets.QDialog):
-    def __init__(self, parent = None):
-        
-        QtWidgets.QDialog.__init__(self, parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
         self.parent = parent
 
@@ -61,9 +59,7 @@ class Find(QtWidgets.QDialog):
         # By default the normal mode is activated
         self.normalRadio.setChecked(True)
 
-
     def find(self):
-
         # Grab the parent's text
         text = self.parent.text.toPlainText()
 
@@ -71,87 +67,76 @@ class Find(QtWidgets.QDialog):
         query = self.findField.toPlainText()
 
         if self.normalRadio.isChecked():
-
             # Use normal string search to find the query from the
             # last starting position
-            self.lastStart = text.find(query,self.lastStart + 1)
+            self.lastStart = text.find(query, self.lastStart + 1)
 
             # If the find() method didn't return -1 (not found)
             if self.lastStart >= 0:
-
                 end = self.lastStart + len(query)
-                
-                self.moveCursor(self.lastStart,end)
-
+                self.moveCursor(self.lastStart, end)
             else:
-
                 self.notFound()
 
         else:
-
             # Compile the pattern
             pattern = re.compile(query)
 
             # The actual search
-            match = pattern.search(text,self.lastStart + 1)
+            match = pattern.search(text, self.lastStart + 1)
 
             if match:
-
                 self.lastStart = match.start()
-                
-                self.moveCursor(self.lastStart,match.end())
-
+                self.moveCursor(self.lastStart, match.end())
             else:
-
                 self.notFound()
 
     def replace(self):
-
         # Grab the text cursor
         cursor = self.parent.text.textCursor()
 
         # Security
         if cursor.hasSelection():
-
-            # We insert the new text, which will override the selected
-            # text
+            # We insert the new text, which will override the selected text
             cursor.insertText(self.replaceField.toPlainText())
 
             # And set the new cursor
             self.parent.text.setTextCursor(cursor)
 
     def replaceAll(self):
-
         self.lastStart = 0
-
         self.find()
 
         # Replace and find until self.lastStart is 0 again
-        while self.lastStart:
+        while self.lastStart > -1: 
             self.replace()
+            previous_start = self.lastStart
             self.find()
+            if self.lastStart == 0 and previous_start != 0: 
+                 break 
 
-    def moveCursor(self,start,end):
-
+    def moveCursor(self, start, end):
         # We retrieve the QTextCursor object from the parent's QTextEdit
         cursor = self.parent.text.textCursor()
 
         # Then we set the position to the beginning of the last match
         cursor.setPosition(start)
 
-        # Next we move the cursor over the match and pass the KeepAnchor parameter
-        # which will make the cursor select the the match's text
-        cursor.movePosition(QtGui.QTextCursor.Right,QtGui.QTextCursor.KeepAnchor,end - start)
+        cursor.movePosition(
+            QtGui.QTextCursor.MoveOperation.Right,
+            QtGui.QTextCursor.MoveMode.KeepAnchor,
+            end - start
+        )
 
         # And finally we set this new cursor as the parent's 
         self.parent.text.setTextCursor(cursor)
 
     def notFound(self):
-
         self.lastStart = 0
                 
         # We set the cursor to the end if the search was unsuccessful
-        self.parent.text.moveCursor(QtGui.QTextCursor.End)
+        self.parent.text.moveCursor(QtGui.QTextCursor.MoveOperation.End)
 
         # Make system beep
-        self.parent.app.beep()
+        # QApplication.beep() é estático agora em QtWidgets
+        QtWidgets.QApplication.beep()
