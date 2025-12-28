@@ -450,121 +450,97 @@ class Main(QtWidgets.QMainWindow):
         else:
             event.ignore()
 
-
-    def context(self,pos):
-
+    def context(self, pos):
         # Grab the cursor
         cursor = self.text.textCursor()
-
         # Grab the current table, if there is one
         table = cursor.currentTable()
-
         # Grab current URL, if any
         hyperlink = link.currentHyperlink(cursor)
-
         # Above will return 0 if there is no current table, in which case
         # we call the normal context menu. If there is a table, we create
         # our own context menu specific to table interaction
         if table or hyperlink:
-
             # Convert the widget coordinates into global coordinates
             pos = self.text.mapToGlobal(pos)
-
             # Create new menu
-            menu = QtGui.QMenu(self.text)
+            menu = QtWidgets.QMenu(self.text)
 
             # Add actions for hyperlinks if available
             if hyperlink:
-
-                openAction = QtGui.QAction("Open hyperlink",self)
+                openAction = QtGui.QAction("Open hyperlink", self)
                 openAction.triggered.connect(lambda: link.openHyperlink(hyperlink))
-
-                copyAction = QtGui.QAction("Copy hyperlink",self)
-                copyAction.triggered.connect(lambda: self.app.clipboard().setText(hyperlink))
-
-                removeAction = QtGui.QAction("Remove hyperlink",self)
+                copyAction = QtGui.QAction("Copy hyperlink", self)
+                copyAction.triggered.connect(
+                    lambda: self.app.clipboard().setText(hyperlink)
+                )
+                removeAction = QtGui.QAction("Remove hyperlink", self)
                 removeAction.triggered.connect(lambda: link.removeHyperlink(cursor))
-
-                editAction = QtGui.QAction("Edit hyperlink",self)
-                editAction.triggered.connect(lambda: link.Link(self,True).show())
+                editAction = QtGui.QAction("Edit hyperlink", self)
+                editAction.triggered.connect(lambda: link.Link(self, True).show())
 
                 menu.addAction(openAction)
                 menu.addAction(copyAction)
                 menu.addAction(removeAction)
                 menu.addAction(editAction)
-
                 menu.addSeparator()
 
             if table:
-
-                appendRowAction = QtGui.QAction("Append row",self)
+                appendRowAction = QtGui.QAction("Append row", self)
                 appendRowAction.triggered.connect(lambda: table.appendRows(1))
-
-                appendColAction = QtGui.QAction("Append column",self)
+                appendColAction = QtGui.QAction("Append column", self)
                 appendColAction.triggered.connect(lambda: table.appendColumns(1))
-
-
-                removeRowAction = QtGui.QAction("Remove row",self)
+                removeRowAction = QtGui.QAction("Remove row", self)
                 removeRowAction.triggered.connect(self.removeRow)
-
-                removeColAction = QtGui.QAction("Remove column",self)
+                removeColAction = QtGui.QAction("Remove column", self)
                 removeColAction.triggered.connect(self.removeCol)
-
-
-                insertRowAction = QtGui.QAction("Insert row",self)
+                insertRowAction = QtGui.QAction("Insert row", self)
                 insertRowAction.triggered.connect(self.insertRow)
-
-                insertColAction = QtGui.QAction("Insert column",self)
+                insertColAction = QtGui.QAction("Insert column", self)
                 insertColAction.triggered.connect(self.insertCol)
-
-
-                mergeAction = QtGui.QAction("Merge cells",self)
+                mergeAction = QtGui.QAction("Merge cells", self)
                 mergeAction.triggered.connect(lambda: table.mergeCells(cursor))
 
                 # Only allow merging if there is a selection
                 if not cursor.hasSelection():
                     mergeAction.setEnabled(False)
 
-                splitAction = QtGui.QAction("Split cells",self)
-
+                splitAction = QtGui.QAction("Split cells", self)
                 cell = table.cellAt(cursor)
 
                 # Only allow splitting if the current cell is larger
                 # than a normal cell
                 if cell.rowSpan() > 1 or cell.columnSpan() > 1:
-
-                    splitAction.triggered.connect(lambda: table.splitCell(cell.row(),cell.column(),1,1))
-
+                    splitAction.triggered.connect(
+                        lambda: table.splitCell(
+                            cell.row(), cell.column(), 1, 1
+                        )
+                    )
                 else:
                     splitAction.setEnabled(False)
 
-
                 menu.addAction(appendRowAction)
                 menu.addAction(appendColAction)
-
                 menu.addSeparator()
-
                 menu.addAction(removeRowAction)
                 menu.addAction(removeColAction)
-
                 menu.addSeparator()
-
                 menu.addAction(insertRowAction)
                 menu.addAction(insertColAction)
-
                 menu.addSeparator()
-
                 menu.addAction(mergeAction)
                 menu.addAction(splitAction)
 
             menu.exec(pos)
-
         else:
-
-            event = QtGui.QContextMenuEvent(QtGui.QContextMenuEvent.Type.Mouse, QtCore.QPoint())
-
-
+            event = QtGui.QContextMenuEvent(
+                QtGui.QContextMenuEvent.Reason.Mouse,
+                QtCore.QPoint(),
+                self.text.mapToGlobal(QtCore.QPoint())
+            )
             self.text.contextMenuEvent(event)
+
+
 
     def removeRow(self):
 
