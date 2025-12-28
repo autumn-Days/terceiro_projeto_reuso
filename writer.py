@@ -399,7 +399,7 @@ class Main(QtWidgets.QMainWindow):
 
     def handleDocumentSize(self,size):
 
-        height = size.height()
+        height = int(size.height())
 
         if height > self.pageHeight:
 
@@ -656,18 +656,29 @@ class Main(QtWidgets.QMainWindow):
     def open(self):
 
         # Get filename and show only .writer files
-        self.filename, _ = QtGui.QFileDialog.getOpenFileName(self, 'Open File',".","(*.writer)")
+        self.filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            'Open File',
+            '.',
+            'Writer Files (*.writer)'
+        )
 
         if self.filename:
-            with open(self.filename,"rt",encoding="utf-8") as file:
+            with open(self.filename, "rt", encoding="utf-8") as file:
                 self.text.setText(file.read())
+
 
 
     def save(self):
 
         # Only open dialog if there is no filename yet
         if not self.filename:
-            self.filename, _ = QtGui.QFileDialog.getSaveFileName(self, 'Save File')
+            self.filename, _ = QtWidgets.QFileDialog.getSaveFileName(
+                self,
+                'Save File',
+                '.',
+                'Writer Files (*.writer)'
+            )
 
         if self.filename:
 
@@ -677,7 +688,7 @@ class Main(QtWidgets.QMainWindow):
 
             # We just store the contents of the text file along with the
             # format in html, which Qt does in a very nice way for us
-            with open(self.filename,"wt", encoding="utf-8") as file:
+            with open(self.filename, "wt", encoding="utf-8") as file:
                 file.write(self.text.toHtml())
 
             self.changesSaved = True
@@ -686,7 +697,7 @@ class Main(QtWidgets.QMainWindow):
     def preview(self):
 
         # Open preview dialog
-        preview = QtPrintSupport.QPrinterPreviewDialog(self.printer)
+        preview = QtPrintSupport.QPrintPreviewDialog(self.printer)
 
         # If a print is requested, open print dialog
         preview.paintRequested.connect(lambda p: self.text.print(p))
@@ -696,10 +707,10 @@ class Main(QtWidgets.QMainWindow):
     def printHandler(self):
 
         # Open printing dialog
-        dialog = QtPrintSupport.QPrinterDialog(self.printer)
+        dialog = QtPrintSupport.QPrintDialog(self.printer, self)
 
         if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
-            self.text.document().print(dialog.printer())
+            self.text.document().print(self.printer)
 
 
     def cursorPosition(self):
@@ -730,8 +741,11 @@ class Main(QtWidgets.QMainWindow):
     def insertImage(self):
 
         # Get image file name
-        filename, _ = QtGui.QFileDialog.getOpenFileName(
-            self, 'Insert image',".","Images (*.png *.xpm *.jpg *.bmp *.gif)"
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            'Insert image',
+            '.',
+            'Images (*.png *.xpm *.jpg *.bmp *.gif)'
         )
 
         if filename:
@@ -767,22 +781,19 @@ class Main(QtWidgets.QMainWindow):
         self.text.setTextColor(color)
 
     def highlight(self):
-
-        color = QtWidgets.QColorDialog.getColor(self)
+        color = QtWidgets.QColorDialog.getColor(
+            QtGui.QColor(),   
+            self              
+        )
 
         if color.isValid():
             self.text.setTextBackgroundColor(color)
 
-
     def bold(self):
-
-        if self.text.fontWeight() == QtGui.QFont.Bold:
-
-            self.text.setFontWeight(QtGui.QFont.Normal)
-
+        if self.text.fontWeight() == QtGui.QFont.Weight.Bold:
+            self.text.setFontWeight(QtGui.QFont.Weight.Normal)
         else:
-
-            self.text.setFontWeight(QtGui.QFont.Bold)
+            self.text.setFontWeight(QtGui.QFont.Weight.Bold)
 
     def italic(self):
 
@@ -808,23 +819,18 @@ class Main(QtWidgets.QMainWindow):
         self.text.setCurrentCharFormat(fmt)
 
     def superScript(self):
-
-        # Grab the current format
         fmt = self.text.currentCharFormat()
-
-        # And get the vertical alignment property
         align = fmt.verticalAlignment()
 
-        # Toggle the state
-        if align == QtGui.QTextCharFormat.AlignNormal:
-
-            fmt.setVerticalAlignment(QtGui.QTextCharFormat.AlignSuperScript)
-
+        if align == QtGui.QTextCharFormat.VerticalAlignment.AlignNormal:
+            fmt.setVerticalAlignment(
+                QtGui.QTextCharFormat.VerticalAlignment.AlignSuperScript
+            )
         else:
+            fmt.setVerticalAlignment(
+                QtGui.QTextCharFormat.VerticalAlignment.AlignNormal
+            )
 
-            fmt.setVerticalAlignment(QtGui.QTextCharFormat.AlignNormal)
-
-        # Set the new format
         self.text.setCurrentCharFormat(fmt)
 
     def subScript(self):
@@ -896,9 +902,9 @@ class Main(QtWidgets.QMainWindow):
             cursor.insertText("\t")
 
 
-    def handleDedent(self,cursor):
+    def handleDedent(self, cursor):
 
-        cursor.movePosition(QtGui.QTextCursor.StartOfLine)
+        cursor.movePosition(QtGui.QTextCursor.MoveOperation.StartOfLine)
 
         # Grab the current line
         line = cursor.block().text()
@@ -918,6 +924,7 @@ class Main(QtWidgets.QMainWindow):
 
                 cursor.deleteChar()
 
+
     def dedent(self):
 
         cursor = self.text.textCursor()
@@ -933,7 +940,11 @@ class Main(QtWidgets.QMainWindow):
             # Calculate range of selection
             diff = cursor.blockNumber() - temp
 
-            direction = QtGui.QTextCursor.MoveOperation.Up if diff > 0 else QtGui.QTextCursor.MoveOperation.Down
+            direction = (
+                QtGui.QTextCursor.MoveOperation.Up
+                if diff > 0
+                else QtGui.QTextCursor.MoveOperation.Down
+            )
 
             # Iterate over lines
             for n in range(abs(diff) + 1):
