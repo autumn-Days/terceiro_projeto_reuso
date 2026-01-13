@@ -5,9 +5,9 @@ Assembles the MVC components
 import sys
 from PyQt6 import QtWidgets
 
-from model import Model
-from view import View
-from controller import Controller
+from models.model import Model
+from views.view import View
+from controllers.controller import Controller
 
 
 class WriterApplication:
